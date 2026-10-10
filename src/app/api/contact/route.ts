@@ -35,9 +35,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Thanks for reaching out." }, { status: 200 });
   }
 
-  const webhookUrl = process.env.CONTACT_WEBHOOK_URL;
-  if (!webhookUrl) {
-    console.warn("CONTACT_WEBHOOK_URL is not configured.");
+  const accessKey = process.env.WEB3FORMS_ACCESS_KEY;
+  if (!accessKey) {
+    console.warn("WEB3FORMS_ACCESS_KEY is not configured.");
     if (process.env.NODE_ENV === "development") {
       return NextResponse.json({ message: "Thanks for reaching out." }, { status: 200 });
     }
@@ -45,17 +45,21 @@ export async function POST(request: Request) {
   }
 
   try {
-    const response = await fetch(webhookUrl, {
+    const response = await fetch("https://api.web3forms.com/submit", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
+        access_key: accessKey,
         name: result.data.name,
         email: result.data.email,
         service: result.data.service,
         message: result.data.message ?? "",
+        subject: `Mehrtek enquiry: ${result.data.service}`,
+        from_name: "Mehrtek website",
       }),
     });
-    if (!response.ok) {
+    const delivery = (await response.json()) as { success?: boolean; message?: string };
+    if (!response.ok || delivery.success !== true) {
       return NextResponse.json({ message: "Unable to send your message right now." }, { status: 500 });
     }
   } catch {
