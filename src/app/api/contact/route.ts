@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Thanks for reaching out." }, { status: 200 });
   }
 
-  const accessKey = process.env.WEB3FORMS_ACCESS_KEY;
+  const accessKey = process.env.WEB3FORMS_ACCESS_KEY?.trim();
   if (!accessKey) {
     console.warn("WEB3FORMS_ACCESS_KEY is not configured.");
     if (process.env.NODE_ENV === "development") {
@@ -48,6 +48,7 @@ export async function POST(request: Request) {
     const response = await fetch("https://api.web3forms.com/submit", {
       method: "POST",
       headers: { "content-type": "application/json" },
+      signal: AbortSignal.timeout(10000),
       body: JSON.stringify({
         access_key: accessKey,
         name: result.data.name,
@@ -58,11 +59,24 @@ export async function POST(request: Request) {
         from_name: "Mehrtek website",
       }),
     });
-    const delivery = (await response.json()) as { success?: boolean; message?: string };
+    const responseText = await response.text();
+    let delivery: { success?: boolean; message?: string } = {};
+    try {
+      delivery = JSON.parse(responseText) as { success?: boolean; message?: string };
+    } catch {
+      console.warn("Web3Forms returned a non-JSON response.", { status: response.status });
+    }
     if (!response.ok || delivery.success !== true) {
+      console.warn("Web3Forms rejected the contact submission.", {
+        status: response.status,
+        message: delivery.message,
+      });
       return NextResponse.json({ message: "Unable to send your message right now." }, { status: 500 });
     }
-  } catch {
+  } catch (error) {
+    console.warn("Web3Forms contact submission failed.", {
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
     return NextResponse.json({ message: "Unable to send your message right now." }, { status: 500 });
   }
 

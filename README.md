@@ -35,7 +35,8 @@ The Playwright suite expects a production build. Run `npm run build` before
 
 - `NEXT_PUBLIC_SITE_URL`: Canonical production URL used by metadata, sitemap, and robots.
 - `WEB3FORMS_ACCESS_KEY`: Server-only Web3Forms access key for contact submissions. If it is
-  unset, development returns a friendly success response; production returns `503`.
+  unset, development returns a friendly success response; production returns `503`. Create a
+  new key if an existing key has ever been committed or shared.
 
 The contact route has a simple in-memory five-request-per-IP hourly limiter. It is
 appropriate for this stateless placeholder and should be replaced with a shared limiter
