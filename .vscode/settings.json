@@ -1,3 +1,4 @@
 {
-    "chat.sessionSync.enabled": true
+    "chat.sessionSync.enabled": true,
+    "github.copilot.chat.agentDebugLog.fileLogging.enabled": true
 }
