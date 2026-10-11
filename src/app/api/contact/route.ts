@@ -45,19 +45,19 @@ export async function POST(request: Request) {
   }
 
   try {
+    const formData = new FormData();
+    formData.append("access_key", accessKey);
+    formData.append("name", result.data.name);
+    formData.append("email", result.data.email);
+    formData.append("service", result.data.service);
+    formData.append("message", result.data.message ?? "");
+    formData.append("subject", `Mehrtek enquiry: ${result.data.service}`);
+    formData.append("from_name", "Mehrtek website");
+
     const response = await fetch("https://api.web3forms.com/submit", {
       method: "POST",
-      headers: { "content-type": "application/json" },
       signal: AbortSignal.timeout(10000),
-      body: JSON.stringify({
-        access_key: accessKey,
-        name: result.data.name,
-        email: result.data.email,
-        service: result.data.service,
-        message: result.data.message ?? "",
-        subject: `Mehrtek enquiry: ${result.data.service}`,
-        from_name: "Mehrtek website",
-      }),
+      body: formData,
     });
     const responseText = await response.text();
     let delivery: { success?: boolean; message?: string } = {};
